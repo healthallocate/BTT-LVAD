@@ -9,9 +9,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 ```
 
-
-```{r cars}
-load("full_heart_data.RData")
+```{r}
+load("heart_pre_policy.RData")
+pre_policy_df = df
+load("heart_post_policy.RData")
+post_policy_df = df
+full_data = pre_policy_df %>% full_join(post_policy_df)
 ```
 
 ```{r}
