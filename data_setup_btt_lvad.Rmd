@@ -1,0 +1,56 @@
+---
+title: "BTT-LVAD"
+output: html_document
+date: "2024-05-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+
+```{r cars}
+load("full_heart_data.RData")
+```
+
+```{r}
+#create additional rows for tx post 90, 365 days
+#alter t_start and t_stop variables accordingly
+data = bind_rows(
+  full_data,
+  full_data %>% filter(transplant == 1 & t_stop - t_start > 90),
+  full_data %>% filter(transplant == 1 & t_stop - t_start > 365)
+) %>% group_by(PX_ID) %>% arrange(PX_ID, t_start) %>% mutate(
+  t_start = case_when(
+    (t_start == lag(t_start) & transplant == 1 & row_number() != n()) ~ lag(t_start) + 90,
+    (transplant == 1 & (t_stop - t_start > 365) & row_number() == n()) ~ lag(t_start) + 365,
+    TRUE ~ t_start
+  ),
+  t_stop = case_when(
+    (t_stop != lag(t_stop) & transplant == 1 & row_number() != n()) ~ t_start + 90,
+    (t_start - lag(t_start) == 90 & transplant == 1 & row_number() != n()) ~ lead(t_start),
+    TRUE ~ t_stop
+  ),
+  transplant_under_90 = ifelse(transplant == 1 & (t_stop - t_start <= 90), 1, 0),
+  transplant_under_365 = ifelse(transplant == 1 & (t_stop - t_start <= 275) & (transplant_under_90 == 0), 1, 0),
+  transplant_over_365 = ifelse(transplant == 1 & transplant_under_90 == 0 & transplant_under_365 == 0, 1, 0)
+) 
+
+
+```
+
+```{r}
+#recode outcome variable
+data = data %>% group_by(PX_ID) %>% mutate(
+  outcome = case_when(
+    outcome == 1 & row_number() == n() ~ 1,
+    TRUE ~ 0
+  )
+)
+```
+
+```{r}
+save(data, file = "hr_data.RData")
+```
+
