@@ -241,7 +241,7 @@ just_form_hr_stat3 %>% filter(PX_ID == 1251088)
 ```{r apply exclusion criteria}
 
 # change these variables to customize inclusion criteria
-filter_date_start = mdy("01-01-2019")
+filter_date_start = mdy("10-18-2018")
 filter_date_end = mdy("11-15-2023")
 include_multi_organ_recipients = TRUE
 
@@ -254,7 +254,7 @@ missingness_threshold = 1
 cand_list = cand_thor %>% 
   
   # Remove recipients listed prior to policy change
-  filter(CAN_LAST_ACT_STAT_DT  >= filter_date_start) %>%
+  filter(CAN_LISTING_DT >= filter_date_start) %>%
   filter(CAN_LISTING_DT <= filter_date_end) %>%
   
   # Remove heart-lung and lung-only recipients
@@ -1273,8 +1273,7 @@ df = df %>% arrange(PX_ID, unique_date) %>%
 df %>% group_by(PX_ID) %>% filter(n_distinct(transplant_time)!=1)
 df %>% group_by(PX_ID) %>% filter(n_distinct(death_time)!=1)
 df %>% group_by(PX_ID) %>% filter(n_distinct(removal_time)!=1)
-  
-df = df %>% filter(death_date_max >= filter_date_start)
+
 ```
 
 ```{r}
